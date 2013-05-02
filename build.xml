@@ -1,0 +1,280 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+
+<!-- 
+     *** CHANGE ME *** change the project name.
+  -->
+<project name = "OntoGraf" default = "install" basedir = ".">    
+
+   <!-- 
+        To run this build file set the environment variable
+        PROTEGE_HOME to point to a protege distribution and type ant
+        install or jar.
+        
+        
+     -->
+
+   <property environment="env"/>
+   <property name = "protege.home"      location="${env.PROTEGE_HOME}"/>
+   <property file="${protege.home}/build.properties"/>
+   <property file="local.properties"/>
+
+   <property file="version.properties"/>
+   <property name="major.version" value="1"/>
+   <property name="minor.version" value="0"/>
+   <property name="micro.version" value="1"/>
+
+   <!-- 
+        **** CHANGE ME ****
+
+        This setting defines the name of the plugin.
+        This may be the only setting that the developer needs to
+        change.
+     -->
+   <property name = "plugin"          value = "org.protege.ontograf"/>
+
+   
+   <!-- 
+        these properties probably don't need changing
+        -->
+   <property name = "src"               location = "./src"/>  
+   <property name = "build"             location = "./build"/>
+   <property name = "classes"           location = "${build}/classes"/>
+   <property name = "lib"               location = "./lib"/>
+   <property name = "genlib"            location = "${build}/lib"/>
+   <property name = "manifest"          location = "${build}/manifest.mf"/>
+
+   <property name = "protege.common"    location="${protege.home}/bundles"/>
+   <property name = "protege.plugins"   location="${protege.home}/plugins"/>
+
+   <property name="equinox.common" 
+             location="${protege.common}/org.eclipse.equinox.common.jar"/>
+   <property name="equinox.registry"
+             location="${protege.common}/org.eclipse.equinox.registry.jar"/>
+   <property name="protege.lib" 
+             location="${protege.common}/org.protege.editor.core.application.jar"/>
+   <property name="common.lib"
+             location="${protege.common}/org.protege.common.jar"/>
+	<!--<property name="cajun.lib"
+   		             location="${protege.plugins}/ca.uvic.cs.chisel.cajun.jar"/>
+	<property name="pqviz.common.lib"
+		             location="${protege.plugins}/ca.uvic.cs.pqviz.common.jar"/>-->
+   <property name="owl.lib"
+             location="${protege.plugins}/org.semanticweb.owl.owlapi.jar"/>
+
+   <property name="owl.editor.jar"
+	     location="${protege.plugins}/org.protege.editor.owl.jar"/>
+   <property name="cajun.lib"
+             location="${protege.plugins}/ca.uvic.cs.chisel.cajun.jar"/>
+
+   <target name = "init">
+     <tstamp>
+       <format property="build.time" pattern="yyyy_MM_dd_hhmm"/>
+     </tstamp>
+     <property name="bundle.version"
+               value="${major.version}.${minor.version}.${micro.version}.${build.time}"/>
+     <mkdir dir = "${build}"/>
+     <mkdir dir = "${classes}"/>
+     <mkdir dir = "${classes}/lib"/>
+     <mkdir dir = "${genlib}"/>
+   </target>  
+
+   <!-- ============================================================= -->
+   <!--             Configuring the Compile Classpath                 -->
+   <!-- ============================================================= -->
+
+
+    <target name="checkProtegeLibsAndReport" depends="checkProtegeLibs"
+            unless="libs.found">
+      <echo message="Missing protege libraries.  You need to set "/>
+      <echo message="the PROTEGE_HOME environment variable to a"/>
+      <echo message="protege installation directory where the"/>
+      <echo message="appropriate plugins have been installed."/>
+      <echo message="Alternatively set the jar libs in local.properties (protege.lib=...)"/>
+      <echo message="Use the -v option to ant to see what jars are missing."/>
+      <fail message = "missing protege libraries"/>
+    </target>
+
+   <!-- 
+        **** CHANGE ME ****
+
+        The following target only needs to be modified if the user
+        needs to change the classpath.  It is preconfigured to use
+        the common protege 4 jars, the lib directory and the
+        libraries that have been uncovered in buildlibs. Also note
+        that the lib entry needs to be removed from the class path if
+        you do not have a lib directory.
+     -->
+   <target name = "checkProtegeLibs" depends="init">
+     <echo message="**********************************************************"/>
+     <echo message="Using Protege Home = ${protege.home}"/>
+     <echo message="Using Java Version = ${ant.java.version}" />
+     <echo message="**********************************************************"/>
+     <condition property="libs.found">
+       <and>
+         <!--<available file="${protege.osgi}" type="file"/>-->
+	     <available file="${equinox.common}" type = "file"/>
+	     <available file="${equinox.registry}" type = "file"/>
+	     <available file="${owl.editor.jar}" type = "file"/>
+         <available file="${owl.lib}" type="file"/>
+         <available file="${cajun.lib}" type = "file"/>
+       </and>
+     </condition>
+     <path id = "project.classpath">    
+       <pathelement location="${protege.osgi}"/>
+       <pathelement location="${protege.lib}"/>
+       <pathelement location="${equinox.common}"/>
+       <pathelement location="${equinox.registry}"/>
+       <pathelement location="${owl.editor.jar}"/>
+       <pathelement location="${owl.lib}"/>
+       <pathelement location="${cajun.lib}"/>
+	   <!-- <pathelement location="${pqviz.common.lib}"/>-->
+       <fileset dir="${genlib}"/>
+     </path>
+   </target>
+
+
+   <!-- 
+        **** CHANGE ME ****
+
+        The following target only needs to be modified if the
+        developer needs to obtain some jar files that are contained in
+        the Protege bundles.  The contents of these jar files are
+        found when Protege 4 runs but may be needed in order to
+        compile the plugin. 
+     -->
+   <target name = "buildlibs" depends="checkProtegeLibsAndReport">
+       <unjar dest="${build}"
+              src="${common.lib}">
+           <patternset>
+               <include name = "**/log4j.jar"/>
+               <include name = "**/looks.jar"/>
+           </patternset>
+       </unjar>
+       <unjar dest="${build}"
+              src="${cajun.lib}">
+           <patternset>
+               <include name = "**/*.jar"/>
+           </patternset>
+       </unjar>
+   </target>
+
+
+   <target name="build.manifest">
+     <copy tofile="${manifest}" 
+           file="META-INF/MANIFEST.MF" overwrite="true"/>
+     <manifest file="${manifest}" 
+               mode = "update">
+        <attribute name="Built-By" value = "${user.name}"/>
+        <!-- 
+             **** CHANGE ME ****
+
+             Do you want the bundle version to be set by the build
+             file/version.properties file?  This is good in situations
+             where there is an automatic build with version updates.
+             It also automatically guarantees that a fresh build is
+             later than the latest released version even if the major,
+             minor and micro version are the same.  Finally it will
+             guarantee the creation of a update.properties file that
+             can be used for automatic updates.  The disadvantage
+             is that the copy run in an ide will often have an old
+             version number.
+         -->
+        <attribute name="Bundle-Version" value="${bundle.version}"/>
+     </manifest>
+   </target>
+
+   <!-- 
+        **** CHANGE ME ****
+
+        Here is the copy.resources target.  It may need modification
+        to copy the right resources into the classes directory.  By
+        default it already copies non-java files found in the source
+        directory, the libraries needed by the project and the
+        viewconfig and the plugin.xml.  This will be sufficient in
+        many cases.  Also if you have no lib directory, you will need
+        to delete the line involving the lib directory.
+     -->
+   <target name="copy.resources" depends="build.manifest">
+     <copy todir="${classes}">
+       <fileset dir="${src}">
+         <include name="**/*"/>
+         <exclude name="**/*.java"/>
+         <exclude name="**/MANIFEST.MF"/>
+         <exclude name="**/manifest.mf"/>
+       </fileset>
+     </copy>
+     <copy todir="${classes}">
+       <fileset dir="." includes="*.xml">
+           <exclude name="build.xml"/>
+       </fileset>
+     </copy>
+   	 <!-- the manifest doesn't belong here but this is good for IDE's -->
+     <mkdir dir="${classes}/META-INF"/>  
+     <copy todir="${classes}/META-INF"   
+           file = "${manifest}"/>
+   </target>
+
+   <!-- 
+        **** CHANGE ME ****
+
+     This will probably only need to be setup relatively late in a
+     project.  It arranges the automatic build of an update.properties
+     file for use with the Protege 4 automatic update feature.  The
+     various fields in this properties file will need to be configured
+     by the developer.  The setting of the version id will only work
+     if the build file sets the version of the bundle in the manifest.
+     -->
+   <target name = "create.update.properties" depends="init">
+       <property name="update.properties.file"
+                 location="${build}/ontograf-update.properties"/>
+       <echo file="${update.properties.file}" append="false">
+id=${plugin}
+version=${bundle.version}
+download=http://smi-protege.stanford.edu/protege4/plugins/4.1/${plugin}.jar
+name=OntoGraf Plugin
+readme=http://smi-protege.stanford.edu/protege4/plugins/4.1/ontograf-readme.html
+license=http://www.gnu.org/licenses/lgpl.html
+author=Sean Falconer
+       </echo>
+   </target>
+
+   <target name = "compile" depends = "buildlibs, checkProtegeLibsAndReport">
+     <javac srcdir = "${src}"
+            destdir = "${classes}" 
+            debug="on"
+            includeAntRuntime="false">
+       <classpath refid = "project.classpath"/>  
+     </javac>
+   </target>
+
+   <target name = "jar" depends = "compile, copy.resources, create.update.properties">
+     <jar jarfile = "${build}/${plugin}.jar"
+          basedir = "${classes}" 
+          manifest = "${build}/manifest.mf"/>
+   </target>
+
+   <target name = "install" depends = "jar">
+     <!-- flush cache -->
+     <delete dir = "${protege.home}/configuration/org.eclipse.core.runtime"/>
+     <delete dir = "${protege.home}/configuration/org.eclipse.osgi"/>
+     <copy file="${build}/${plugin}.jar" 
+           todir = "${protege.plugins}"
+           overwrite = "true"/>
+   </target>
+	
+   <target name = "clean">
+     <delete dir = "${build}"/>
+   </target>
+
+
+   <target name = "usage">
+     <echo message = "To run this script set the PROTEGE_HOME environment"/>
+     <echo message = "variable and use one of the following targets"/>
+     <echo message = "jar - builds the jar (bundle) file for this project"/>
+     <echo message = "install - installs  the bundle into the Protege distribution"/>
+     <echo message = "copy.resources - copyies resources into the classes directory"/>
+     <echo message = "    this can  be useful for ide developers - see the wiki"/>
+   </target>
+
+
+</project>
