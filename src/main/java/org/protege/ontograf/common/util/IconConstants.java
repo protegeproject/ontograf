@@ -18,14 +18,14 @@ import org.protege.ontograf.common.GraphController;
  * @author Sean Falconer
  */
 public abstract class IconConstants {
-	public static final Icon ICON_PLUS = loadImageIcon(GraphController.class, "/icon/icon_plus.gif");
+	public static final Icon ICON_PLUS = loadImageIcon(GraphController.class, "/icon_plus.gif");
 	
-	public static final Icon ICON_EXPORT_IMAGE = loadImageIcon(GraphController.class, "/icon/icon_export.gif");
-	public static final Icon ICON_EDIT_NODE_TOOLTIP = loadImageIcon(GraphController.class, "/icon/image_edit.png");
-	public static final Icon ICON_SAVE_GRAPH = loadImageIcon(GraphController.class, "/icon/save.gif");
-	public static final Icon ICON_EXPORT_DOT_GRAPH = loadImageIcon(GraphController.class, "/icon/export_wiz.gif");
-	public static final Icon ICON_OPEN_GRAPH = loadImageIcon(GraphController.class, "/icon/open.gif");
-	public static final Icon ICON_PIN_TOOLTIPS = loadImageIcon(GraphController.class, "/icon/pinned.gif");
+	public static final Icon ICON_EXPORT_IMAGE = loadImageIcon(GraphController.class, "/icon_export.gif");
+	public static final Icon ICON_EDIT_NODE_TOOLTIP = loadImageIcon(GraphController.class, "/image_edit.png");
+	public static final Icon ICON_SAVE_GRAPH = loadImageIcon(GraphController.class, "/save.gif");
+	public static final Icon ICON_EXPORT_DOT_GRAPH = loadImageIcon(GraphController.class, "/export_wiz.gif");
+	public static final Icon ICON_OPEN_GRAPH = loadImageIcon(GraphController.class, "/open.gif");
+	public static final Icon ICON_PIN_TOOLTIPS = loadImageIcon(GraphController.class, "/pinned.gif");
 	
 	@SuppressWarnings("unchecked")
 	public static ImageIcon loadImageIcon(Class clas, String iconPath) {
