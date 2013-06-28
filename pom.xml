@@ -10,7 +10,7 @@
 
 	<groupId>edu.stanford.protege</groupId>
 	<artifactId>org.protege.ontograf</artifactId>
-	<version>1.0.3-SNAPSHOT</version>
+	<version>1.0.3</version>
 	<packaging>bundle</packaging>
 
 	<name>OntoGraf</name>
@@ -31,9 +31,9 @@
 	</developers>
 	
 	<scm>
-		<connection>scm:svn:http://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.ontograf/trunk/</connection>
-		<developerConnection>scm:svn:https://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.ontograf/trunk/</developerConnection>
-		<url>http://smi-protege.stanford.edu/svn/protege4/plugins/org.protege.ontograf/</url>
+		<connection>scm:svn:http://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.ontograf/tags/org.protege.ontograf-1.0.3</connection>
+		<developerConnection>scm:svn:https://smi-protege.stanford.edu/repos/protege/protege4/plugins/org.protege.ontograf/tags/org.protege.ontograf-1.0.3</developerConnection>
+		<url>http://smi-protege.stanford.edu/svn/protege4/plugins/org.protege.ontograf/tags/org.protege.ontograf-1.0.3</url>
 	</scm>
 
 	<dependencies>
