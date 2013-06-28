@@ -3,19 +3,26 @@
 	<modelVersion>4.0.0</modelVersion>
 	
 	<parent>
-		<groupId>edu.stanford.protege</groupId>
-		<artifactId>protege-parent</artifactId>
-		<version>5.0.0-beta-03</version>
-		<relativePath>../protege-parent/pom.xml</relativePath>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
 	</parent>
-	
+
+	<groupId>edu.stanford.protege</groupId>
 	<artifactId>org.protege.ontograf</artifactId>
 	<version>1.0.3-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<name>OntoGraf</name>
     <description>A plug-in for the Protege Desktop ontology editor that allows visual, interactive navigation of the relationships in OWL ontologies.</description>
-
+    <url>http://protegewiki.stanford.edu/wiki/OntoGraf</url>
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/copyleft/lesser.html</url>
+		</license>
+	</licenses>
+	
 	<developers>
 		<developer>
 			<name>Sean Falconer</name>
@@ -33,13 +40,13 @@
 		<dependency>
 			<groupId>edu.stanford.protege</groupId>
 			<artifactId>ca.uvic.cs.chisel.cajun</artifactId>
-			<version>1.0.2-SNAPSHOT</version>
+			<version>1.0.2</version>
 		</dependency>
 	
 		<dependency>
 			<groupId>edu.stanford.protege</groupId>
 			<artifactId>org.protege.editor.owl</artifactId>
-			<version>${project.parent.version}</version>
+			<version>4.3.0</version>
 		</dependency>
 	</dependencies>
 
@@ -56,6 +63,11 @@
 						<Bundle-SymbolicName>${project.artifactId};singleton:=true</Bundle-SymbolicName>
 						<Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
 						<Export-Package>${project.artifactId}*</Export-Package>
+						<Import-Package>
+							org.protege.editor.core.*;version="4.3", <!-- equivalent to [4.3, infinity) -->
+							org.protege.editor.owl.*;version="4.3",
+							*
+						</Import-Package>
 						<Include-Resource>plugin.xml, {maven-resources}</Include-Resource>
 					</instructions>
 					<executions>
