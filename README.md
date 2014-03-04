@@ -1,4 +1,4 @@
-org.protege.ontograf
+OntoGraf
 ====================
 
 Protege Desktop plug-in that allows visual, interactive navigation of the relationships in OWL ontologies.
