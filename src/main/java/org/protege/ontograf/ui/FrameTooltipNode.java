@@ -12,11 +12,12 @@ import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.ontograf.common.util.NodeOWLClassTooltipType;
@@ -34,6 +35,7 @@ import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
+import org.semanticweb.owlapi.search.EntitySearcher;
 
 import ca.uvic.cs.chisel.cajun.graph.AbstractGraph;
 import edu.umd.cs.piccolo.PCamera;
@@ -63,7 +65,7 @@ public class FrameTooltipNode extends PNode {
 	private boolean isCameraNode;
 	
 	public FrameTooltipNode(OWLModelManager owlModelManager, AbstractGraph graph, PNode owner, OWLEntity owlEntity) {
-		this.borderStroke = new PFixedWidthStroke(1f);
+		borderStroke = new PFixedWidthStroke(1f);
 		
 		this.owlModelManager = owlModelManager;
 		this.owlEntity = owlEntity;
@@ -78,7 +80,7 @@ public class FrameTooltipNode extends PNode {
 	}
 	
 	public void updateLocation(AbstractGraph graph, PNode owner) {
-		this.removeAllChildren();
+		removeAllChildren();
 		
 		isCameraNode = false;
 		
@@ -103,12 +105,14 @@ public class FrameTooltipNode extends PNode {
 	 */
 	private void adjustX(AbstractGraph graph, PNode owner) {
 		Rectangle2D rect = owner.getBounds();
-		if(isCameraNode) rect = graph.getCamera().viewToLocal(owner.getBounds());
+		if(isCameraNode) {
+            rect = graph.getCamera().viewToLocal(owner.getBounds());
+        }
 		
 		double maxX = graph.getWidth() / 3;
 		maxX *= 2;
 		if(getX() > maxX) {
-			this.translate(-1 * (getWidth() + rect.getWidth()), 0);
+			translate(-1 * (getWidth() + rect.getWidth()), 0);
 		}
 	}
 	
@@ -163,14 +167,18 @@ public class FrameTooltipNode extends PNode {
 		}
 		
 		if(NodeOWLIndividualTooltipType.DIFFERENT_INDIVIDUALS.isEnabled()) {
-			Set<OWLIndividual> individuals = individual.getDifferentIndividuals(owlModelManager.getActiveOntology());
+            Collection<OWLIndividual> individuals = EntitySearcher
+                    .getDifferentIndividuals(individual,
+                            owlModelManager.getActiveOntology());
 			if(individuals.size() > 0) {
 				currentPos = addCollectionTextValues(individuals, "Different individuals:", font, currentPos);
 			}
 		}
 		
 		if(NodeOWLIndividualTooltipType.SAME_INDIVIDUALS.isEnabled()) {
-			Set<OWLIndividual> individuals = individual.getSameIndividuals(owlModelManager.getActiveOntology());
+            Collection<OWLIndividual> individuals = EntitySearcher
+                    .getSameIndividuals(individual,
+                            owlModelManager.getActiveOntology());
 			if(individuals.size() > 0) {
 				currentPos = addCollectionTextValues(individuals, "Same individuals:", font, currentPos);
 			}
@@ -191,9 +199,12 @@ public class FrameTooltipNode extends PNode {
 		}
 		
 		if(NodeOWLIndividualTooltipType.NEGATIVE_DATA_PROPERTY_ASSERTIONS.isEnabled()) {
-			Map<OWLDataPropertyExpression, Set<OWLLiteral>> map = individual.getNegativeDataPropertyValues(owlModelManager.getActiveOntology());
+            Map<OWLDataPropertyExpression, Collection<OWLLiteral>> map = EntitySearcher
+                    .getNegativeDataPropertyValues(individual,
+                            owlModelManager.getActiveOntology()).asMap();
 			Set<String> negativeDataProperties = new HashSet<String>();
-			for(Entry<OWLDataPropertyExpression, Set<OWLLiteral>> entry : map.entrySet()) {
+            for (Entry<OWLDataPropertyExpression, Collection<OWLLiteral>> entry : map
+                    .entrySet()) {
 				String property = owlModelManager.getRendering(entry.getKey());
 				for(OWLLiteral literal : entry.getValue()) {
 					property += " " + owlModelManager.getRendering(literal);
@@ -208,9 +219,12 @@ public class FrameTooltipNode extends PNode {
 		
 		
 		if(NodeOWLIndividualTooltipType.NEGATIVE_OBJECT_PROPERTY_ASSERTIONS.isEnabled()) {
-			Map<OWLObjectPropertyExpression, Set<OWLIndividual>> negativeObjectPropertiesMap = individual.getNegativeObjectPropertyValues(owlModelManager.getActiveOntology());
+            Map<OWLObjectPropertyExpression, Collection<OWLIndividual>> negativeObjectPropertiesMap = EntitySearcher
+                    .getNegativeObjectPropertyValues(individual,
+                            owlModelManager.getActiveOntology()).asMap();
 			Set<String> negativeObjectProperties = new HashSet<String>();
-			for(Entry<OWLObjectPropertyExpression, Set<OWLIndividual>> entry : negativeObjectPropertiesMap.entrySet()) {
+            for (Entry<OWLObjectPropertyExpression, Collection<OWLIndividual>> entry : negativeObjectPropertiesMap
+                    .entrySet()) {
 				String property = owlModelManager.getRendering(entry.getKey());
 				for(OWLIndividual owlIndividual : entry.getValue()) {
 					property += " " + owlModelManager.getRendering(owlIndividual);
@@ -224,7 +238,9 @@ public class FrameTooltipNode extends PNode {
 		}
 		
 		if(NodeOWLIndividualTooltipType.ANNOTATIONS.isEnabled()) {
-			Set<OWLAnnotation> annotations = owlEntity.getAnnotations(owlModelManager.getActiveOntology());
+            Collection<OWLAnnotation> annotations = EntitySearcher
+                    .getAnnotations(owlEntity,
+                            owlModelManager.getActiveOntology());
 			if(annotations.size() > 0) {
 				currentPos = addCollectionTextValues(annotations, "Annotations:", font, currentPos);
 			}
@@ -264,7 +280,9 @@ public class FrameTooltipNode extends PNode {
 		}
 		
 		if(NodeOWLClassTooltipType.ANNOTATIONS.isEnabled()) {
-			Set<OWLAnnotation> annotations = owlEntity.getAnnotations(owlModelManager.getActiveOntology());
+            Collection<OWLAnnotation> annotations = EntitySearcher
+                    .getAnnotations(owlEntity,
+                            owlModelManager.getActiveOntology());
 			if(annotations.size() > 0) {
 				currentPos = addCollectionTextValues(annotations, "Annotations:", font, currentPos);
 			}
@@ -287,7 +305,9 @@ public class FrameTooltipNode extends PNode {
 		return new Point2D.Double(x-10, y);
 	}
 	
-	private Point2D addCollectionTextValues(Set<? extends OWLObject> entities, String title, Font font, Point2D point) {
+    private Point2D addCollectionTextValues(
+            Collection<? extends OWLObject> entities, String title, Font font,
+            Point2D point) {
 		double x = point.getX();
 		double y = point.getY();
 		textNodes.add(createTextNode(x, y, title, font.deriveFont(Font.BOLD)));
@@ -324,18 +344,20 @@ public class FrameTooltipNode extends PNode {
 		Rectangle bounds = graph.getCanvas().getBounds();
 		
 		Rectangle2D rect = owner.getBounds(); //camera.viewToLocal(owner.getBounds());
-		if(isCameraNode) rect = camera.viewToLocal(owner.getBounds());
+		if(isCameraNode) {
+            rect = camera.viewToLocal(owner.getBounds());
+        }
 		
 		double x = rect.getX();
 		double y = rect.getY();
 		
 		x += rect.getWidth();
-		x = Math.min(x, bounds.getWidth() - this.getWidth());
+		x = Math.min(x, bounds.getWidth() - getWidth());
 		
 		y = Math.max(y, 0);
 		
-		this.setX(x);
-		this.setY(y);
+		setX(x);
+		setY(y);
 	}
 	
 	/**
@@ -361,14 +383,14 @@ public class FrameTooltipNode extends PNode {
 		StringBuffer buffer = new StringBuffer(text.length() + 10);
 		if (text.length() > maxCharsPerLine) {
 			int lines = 0;
-			while ((text.length() > 0) && (lines < maxLines)) {
+			while (text.length() > 0 && lines < maxLines) {
 				// base case #1 - text is short
 				if (text.length() < maxCharsPerLine) {
 					buffer.append(text);
 					break;
 				}
 				// base case #2 - added max lines
-				if ((lines + 1) == maxLines) {
+				if (lines + 1 == maxLines) {
 					// elide the remaining text (s) instead of just the current line
 					buffer.append(elideText(text, maxCharsPerLine));
 					break;
@@ -416,7 +438,7 @@ public class FrameTooltipNode extends PNode {
 		double h = 0;
 		for(GraphTextNode textNode : textNodes) {
 			PBounds textBounds = textNode.getBounds();
-			w = Math.max(w, (3 * PADDING_X) + textBounds.getWidth());
+			w = Math.max(w, 3 * PADDING_X + textBounds.getWidth());
 			minY = Math.min(minY, textBounds.getY());
 			if(maxY < textBounds.getY()) {
 				maxY = textBounds.getY();
@@ -425,7 +447,7 @@ public class FrameTooltipNode extends PNode {
 			maxY = Math.max(maxY, textBounds.getY());
 		}
 		
-		h += (maxY - minY) + PADDING_Y;
+		h += maxY - minY + PADDING_Y;
 		setBounds(getX(), getY(), w, h);
 	}
 	
@@ -444,7 +466,7 @@ public class FrameTooltipNode extends PNode {
 	    float[] clr1 = c1.getComponents(null);
 	    float[] clr2 = c2.getComponents(null);
 	    for (int i = 0; i < clr1.length; i++) {
-	        clr1[i] = (clr1[i] * pct1) + (clr2[i] * pct2);
+	        clr1[i] = clr1[i] * pct1 + clr2[i] * pct2;
 	    }
 	    return new Color(clr1[0], clr1[1], clr1[2], clr1[3]);
 	}
@@ -466,7 +488,7 @@ public class FrameTooltipNode extends PNode {
 	protected void paint(PPaintContext paintContext) {
 		Graphics2D g2 = paintContext.getGraphics();
 		
-		Shape shape = this.getBounds();
+		Shape shape = getBounds();
 		
 		g2.setPaint(BACKGROUND_COLOR);
 

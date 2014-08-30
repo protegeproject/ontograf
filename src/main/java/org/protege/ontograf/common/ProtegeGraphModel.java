@@ -30,6 +30,7 @@ import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLQuantifiedRestriction;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
+import org.semanticweb.owlapi.search.EntitySearcher;
 
 import ca.uvic.cs.chisel.cajun.filter.FilterManager;
 import ca.uvic.cs.chisel.cajun.graph.DefaultGraphModel;
@@ -83,11 +84,11 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 	public ProtegeGraphModel(OWLEditorKit owlEditorKit) {
 		super();
 		
-		this.owlModelManager = owlEditorKit.getModelManager();
+		owlModelManager = owlEditorKit.getModelManager();
 		this.owlEditorKit = owlEditorKit;
-		this.owlOntology = owlModelManager.getActiveOntology();
+		owlOntology = owlModelManager.getActiveOntology();
 		
-		this.frameToArcCount = new HashMap<OWLEntity, Set<GraphArc>>();
+		frameToArcCount = new HashMap<OWLEntity, Set<GraphArc>>();
 	}
 	
 	public OWLModelManager getOwlModelManager() {
@@ -193,8 +194,11 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 	 * @return The node type as a string.
 	 */
 	protected String getNodeType(OWLEntity entity) {
-		if(entity instanceof OWLClass) return CLASS_ART_TYPE;
-		else if(entity instanceof OWLIndividual) return INDIVIDUAL_ART_TYPE;
+		if(entity instanceof OWLClass) {
+            return CLASS_ART_TYPE;
+        } else if(entity instanceof OWLIndividual) {
+            return INDIVIDUAL_ART_TYPE;
+        }
 		return UNKNOWN_ART_TYPE;
 	}
 	
@@ -235,7 +239,7 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 	 * @return True if this node should be displayed.
 	 */
 	protected boolean isDisplayableNode(OWLEntity entity, boolean mustBeVisible) {
-		return !mustBeVisible || (mustBeVisible && getNode(entity) != null);
+		return !mustBeVisible || mustBeVisible && getNode(entity) != null;
 	}
 	
 	/**
@@ -284,7 +288,9 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 		
 		getDomainRangeRelationships(); // ensures that domain range rels are created
 		for (GraphArc relationship : domainRangeRelsBuffer) {
-			if(!filterManager.isArcTypeVisible(relationship.getType())) continue;
+			if(!filterManager.isArcTypeVisible(relationship.getType())) {
+                continue;
+            }
 			
 			OWLEntity sourceObject = (OWLEntity) relationship.getSource().getUserObject();
 			OWLEntity destObject = (OWLEntity) relationship.getDestination().getUserObject();
@@ -292,8 +298,10 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 			if (!isDisplayableNode(sourceObject, mustBeVisible) || !isDisplayableNode(destObject, mustBeVisible)) {
 				continue;
 			}
-			if ((outgoing && sourceObject.equals(entityOfInterest)) || destObject.equals(entityOfInterest)) {
-				if(outgoing) relationship.setInverted(false);
+			if (outgoing && sourceObject.equals(entityOfInterest) || destObject.equals(entityOfInterest)) {
+				if(outgoing) {
+                    relationship.setInverted(false);
+                }
 				
 				domainRangeArcs.add(relationship);
 			}
@@ -330,9 +338,11 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 		artifactToUnreifiedRels = new HashMap<OWLNamedIndividual, Set<GraphArc>>();
 
 		for(OWLNamedIndividual individual : owlOntology.getIndividualsInSignature()) {
-			for(Entry<OWLObjectPropertyExpression, Set<OWLIndividual>> entry : individual.getObjectPropertyValues(owlOntology).entrySet()) {
+            for (Entry<OWLObjectPropertyExpression, Collection<OWLIndividual>> entry : EntitySearcher
+                    .getObjectPropertyValues(individual, owlOntology).asMap()
+                    .entrySet()) {
 				for(OWLIndividual refIndividual : entry.getValue()) {
-					GraphArc arc = createArc((OWLNamedIndividual)individual, (OWLNamedIndividual)refIndividual, owlModelManager.getRendering(entry.getKey()));
+					GraphArc arc = createArc(individual, (OWLNamedIndividual)refIndividual, owlModelManager.getRendering(entry.getKey()));
 					
 					Set<GraphArc> outgoingUnreifiedRels = artifactToUnreifiedRels.get(individual);
 					if (outgoingUnreifiedRels == null) {
@@ -355,11 +365,16 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 	private Set<GraphArc> findIncomingIndividualRelationships(OWLEntity entityOfInterest, boolean mustBeVisible) {
 		Set<GraphArc> arcs = new HashSet<GraphArc>();
 
-		if (!(entityOfInterest instanceof OWLNamedIndividual)) return arcs;
-		if(!filterManager.isArcTypeVisible(DIRECT_INDIVIDUAL_SLOT_TYPE)) return arcs;
+		if (!(entityOfInterest instanceof OWLNamedIndividual)) {
+            return arcs;
+        }
+		if(!filterManager.isArcTypeVisible(DIRECT_INDIVIDUAL_SLOT_TYPE)) {
+            return arcs;
+        }
 
 		OWLNamedIndividual destIndiv = (OWLNamedIndividual) entityOfInterest;
-		for(OWLClassExpression refNode : destIndiv.getTypes(owlOntology)) {
+        for (OWLClassExpression refNode : EntitySearcher.getTypes(destIndiv,
+                owlOntology)) {
 			if(refNode instanceof OWLClass) {
 				OWLClass clsOwner = (OWLClass)refNode;
 				if (isDisplayableNode(clsOwner, mustBeVisible)) {
@@ -381,7 +396,8 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 		}
 
 		OWLClass owlClass = (OWLClass) entityOfInterest;
-		Set<OWLAxiom> axioms = owlClass.getReferencingAxioms(owlOntology);
+        Collection<OWLAxiom> axioms = EntitySearcher.getReferencingAxioms(
+                owlClass, owlOntology);
 		for(OWLAxiom axiom : axioms) {
 			if(axiom.getAxiomType().equals(AxiomType.SUBCLASS_OF)) {
 				OWLSubClassOfAxiom subClassAxiom = (OWLSubClassOfAxiom)axiom;
@@ -393,10 +409,15 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 						OWLQuantifiedRestriction restriction = (OWLQuantifiedRestriction)superClassExpression;
 						if(restriction.getFiller() instanceof OWLClass) {
 							String relType = owlModelManager.getRendering(restriction.getProperty());
-							if(restriction instanceof OWLObjectSomeValuesFrom) relType += SUB_CLASS_SOME_VALUE_OF;
-							else relType += SUB_CLASS_ALL_VALUES;
+							if(restriction instanceof OWLObjectSomeValuesFrom) {
+                                relType += SUB_CLASS_SOME_VALUE_OF;
+                            } else {
+                                relType += SUB_CLASS_ALL_VALUES;
+                            }
 							
-							if(!filterManager.isArcTypeVisible(relType)) continue;
+							if(!filterManager.isArcTypeVisible(relType)) {
+                                continue;
+                            }
 							
 							OWLEntity source = (OWLClass)subClassExpression;
 							OWLEntity target = (OWLClass)restriction.getFiller();
@@ -422,16 +443,22 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 
 		OWLClass owlClass = (OWLClass) entityOfInterest;
 		
-		convertOWLClassExpressionsToArcs(owlClass, owlClass.getSuperClasses(owlOntology), arcs, null, mustBeVisible);
+        convertOWLClassExpressionsToArcs(owlClass,
+                EntitySearcher.getSuperClasses(owlClass, owlOntology), arcs,
+                null, mustBeVisible);
 		
 		OWLIconProviderImpl iconProvider = new OWLIconProviderImpl(owlModelManager);
 		Icon icon = iconProvider.getIcon(owlClass);
-		convertOWLClassExpressionsToArcs(owlClass, owlClass.getEquivalentClasses(owlOntology), arcs, icon, mustBeVisible);
+        convertOWLClassExpressionsToArcs(owlClass,
+                EntitySearcher.getEquivalentClasses(owlClass, owlOntology),
+                arcs, icon, mustBeVisible);
 		
 		return arcs;
 	}
 	
-	private void convertOWLClassExpressionsToArcs(OWLClass owlClass, Set<OWLClassExpression> expressions, Set<GraphArc> arcs, Icon icon, boolean mustBeVisible) {
+    private void convertOWLClassExpressionsToArcs(OWLClass owlClass,
+            Collection<OWLClassExpression> expressions, Set<GraphArc> arcs,
+            Icon icon, boolean mustBeVisible) {
 		for(OWLClassExpression expression : expressions) {
 			if(expression.getClassExpressionType().equals(ClassExpressionType.OBJECT_SOME_VALUES_FROM) 
 					|| expression.getClassExpressionType().equals(ClassExpressionType.OBJECT_ALL_VALUES_FROM)) {
@@ -457,15 +484,23 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 				if(restriction.getFiller() instanceof OWLClass) {
 					String relType = owlModelManager.getRendering(restriction.getProperty());
 					if(isSubClass) {
-						if(restriction instanceof OWLObjectSomeValuesFrom) relType += SUB_CLASS_SOME_VALUE_OF;
-						else relType += SUB_CLASS_ALL_VALUES;
+						if(restriction instanceof OWLObjectSomeValuesFrom) {
+                            relType += SUB_CLASS_SOME_VALUE_OF;
+                        } else {
+                            relType += SUB_CLASS_ALL_VALUES;
+                        }
 					}
 					else {
-						if(restriction instanceof OWLObjectSomeValuesFrom) relType += EQUIVALENT_CLASS_SOME_VALUE_OF;
-						else relType += EQUIVALENT_CLASS_ALL_VALUES;
+						if(restriction instanceof OWLObjectSomeValuesFrom) {
+                            relType += EQUIVALENT_CLASS_SOME_VALUE_OF;
+                        } else {
+                            relType += EQUIVALENT_CLASS_ALL_VALUES;
+                        }
 					}
 					
-					if(!filterManager.isArcTypeVisible(relType)) continue;
+					if(!filterManager.isArcTypeVisible(relType)) {
+                        continue;
+                    }
 					
 					if(isDisplayableNode( (OWLClass)restriction.getFiller(), mustBeVisible)) {
 						arcs.add(createArc(owlClass, (OWLClass)restriction.getFiller(), relType, icon));
@@ -483,8 +518,12 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 	protected Set<GraphArc> loadParents(OWLEntity entityOfInterest, boolean mustBeVisible) {
 		Set<GraphArc> parents = new HashSet<GraphArc>();
 		
-		if(!(entityOfInterest instanceof OWLClass)) return parents;
-		if(!filterManager.isArcTypeVisible(DIRECT_SUBCLASS_SLOT_TYPE)) return parents;
+		if(!(entityOfInterest instanceof OWLClass)) {
+            return parents;
+        }
+		if(!filterManager.isArcTypeVisible(DIRECT_SUBCLASS_SLOT_TYPE)) {
+            return parents;
+        }
 		
 		OWLClass clsOfInterest = (OWLClass)entityOfInterest;
 		
@@ -507,8 +546,12 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 	protected Set<GraphArc> loadChildren(OWLEntity entityOfInterest, boolean mustBeVisible) {
 		Set<GraphArc> children = new HashSet<GraphArc>();
 		
-		if(!(entityOfInterest instanceof OWLClass)) return children;
-		if(!filterManager.isArcTypeVisible(DIRECT_SUBCLASS_SLOT_TYPE)) return children;
+		if(!(entityOfInterest instanceof OWLClass)) {
+            return children;
+        }
+		if(!filterManager.isArcTypeVisible(DIRECT_SUBCLASS_SLOT_TYPE)) {
+            return children;
+        }
 		
 		OWLClass clsOfInterest = (OWLClass)entityOfInterest;
 		
@@ -525,11 +568,16 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 	private Set<GraphArc> findOutgoingIndividualRelationships(OWLEntity entityOfInterest, boolean mustBeVisible) {
 		Set<GraphArc> incomingInstanceRels = new HashSet<GraphArc>();
 
-		if (!(entityOfInterest instanceof OWLClass)) return incomingInstanceRels;
-		if(!filterManager.isArcTypeVisible(DIRECT_INDIVIDUAL_SLOT_TYPE)) return incomingInstanceRels;
+		if (!(entityOfInterest instanceof OWLClass)) {
+            return incomingInstanceRels;
+        }
+		if(!filterManager.isArcTypeVisible(DIRECT_INDIVIDUAL_SLOT_TYPE)) {
+            return incomingInstanceRels;
+        }
 
 		OWLClass owlClass = (OWLClass) entityOfInterest;
-		for(OWLIndividual individual : owlClass.getIndividuals(owlOntology)) {
+        for (OWLIndividual individual : EntitySearcher.getIndividuals(owlClass,
+                owlOntology)) {
 			if(individual instanceof OWLNamedIndividual) {
 				OWLNamedIndividual namedIndividual = (OWLNamedIndividual)individual;
 				if(isDisplayableNode(namedIndividual, mustBeVisible)) {
@@ -543,7 +591,8 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 		return incomingInstanceRels;
 	}
 	
-	private Set<OWLEntity> getOWLClasses(Set<OWLClassExpression> owlExpressions) {
+    private Set<OWLEntity> getOWLClasses(
+            Collection<OWLClassExpression> owlExpressions) {
 		Set<OWLEntity> domains = new HashSet<OWLEntity>();
 		for(OWLClassExpression expression : owlExpressions) {
 			if(expression instanceof OWLClass) {
@@ -577,8 +626,10 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 		
 		for(OWLObjectProperty property : properties) {
 			for(OWLObjectProperty owlObjectProperty : property.getObjectPropertiesInSignature()) {
-				Set<OWLClassExpression> domainVals = owlObjectProperty.getDomains(owlOntology);
-				Set<OWLClassExpression> rangeVals = owlObjectProperty.getRanges(owlOntology);
+                Collection<OWLClassExpression> domainVals = EntitySearcher
+                        .getDomains(owlObjectProperty, owlOntology);
+                Collection<OWLClassExpression> rangeVals = EntitySearcher
+                        .getRanges(owlObjectProperty, owlOntology);
 				
 				if (domainVals.isEmpty() && !rangeVals.isEmpty()) {
 					domainVals.add(owlModelManager.getOWLEntityFinder().getOWLClass("Thing"));
