@@ -2,15 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>7</version>
-	</parent>
+	 <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
 
 	<groupId>edu.stanford.protege</groupId>
 	<artifactId>org.protege.ontograf</artifactId>
-	<version>1.0.4-SNAPSHOT</version>
+	<version>1.0.5-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<name>OntoGraf</name>
@@ -40,56 +40,95 @@
 		<dependency>
 			<groupId>edu.stanford.protege</groupId>
 			<artifactId>ca.uvic.cs.chisel.cajun</artifactId>
-			<version>1.0.3-SNAPSHOT</version>
+		<!--	<version>1.0.3-SNAPSHOT</version> -->
+			<version>1.0.2</version>
 		</dependency>
-	
-		<dependency>
-			<groupId>edu.stanford.protege</groupId>
-			<artifactId>org.protege.editor.owl</artifactId>
-			<version>5.0.0-beta-18-SNAPSHOT</version>
-		</dependency>
+
+        <dependency>
+            <groupId>edu.stanford.protege</groupId>
+            <artifactId>protege-editor-owl</artifactId>
+            <version>5.0.0-beta-18-SNAPSHOT</version>
+        </dependency>
 	</dependencies>
 
+	
 	<build>
 		<plugins>
+			
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-compiler-plugin</artifactId>
               <version>3.0</version>
               <configuration>
-                <source>1.7</source>
-                <target>1.7</target>
+				  <source>1.8</source>
+				  <target>1.8</target>
               </configuration>
             </plugin>
+            
             <plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>2.3.7</version>
+				<version>2.4.0</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
 						<Bundle-Activator>org.protege.editor.core.plugin.DefaultPluginActivator</Bundle-Activator>
 						<Bundle-SymbolicName>${project.artifactId};singleton:=true</Bundle-SymbolicName>
 						<Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
+												
 						<Export-Package>${project.artifactId}*</Export-Package>
+						
 						<Import-Package>
-							org.protege.editor.core.*;version="4.3", <!-- equivalent to [4.3, infinity) -->
-							org.protege.editor.owl.*;version="4.3",
+							org.protege.editor.core.*;version="5.0.0",
+							org.protege.editor.owl.*;version="5.0.0",
 							*
 						</Import-Package>
 						<Include-Resource>plugin.xml, {maven-resources}</Include-Resource>
 					</instructions>
-					<executions>
-						<execution>
-							<id>bundle-manifest</id>
-							<phase>process-classes</phase>
-							<goals>    
-								<goal>manifest</goal>
-							</goals>   
-					</execution>
+	
+                 <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
                 </executions>
+                
               </configuration>
             </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+       
+                  
             <plugin>
               <artifactId>maven-eclipse-plugin</artifactId>
               <version>2.9</version>
@@ -97,6 +136,7 @@
                 <pde>true</pde>
               </configuration>
             </plugin>
+            
 		</plugins>
 	</build>
 </project>

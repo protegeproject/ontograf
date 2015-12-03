@@ -17,7 +17,7 @@ import javax.swing.filechooser.FileFilter;
  *
  *     JFileChooser chooser = new JFileChooser();
  *     ShrimpFileFilter filter = new ShrimpFileFilter(
- *                   new String{"gif", "jpg"}, "JPEG & GIF Images")
+ *                   new String{"gif", "jpg"}, "JPEG and GIF Images")
  *     chooser.addChoosableFileFilter(filter);
  *     chooser.showOpenDialog(this);
  *
