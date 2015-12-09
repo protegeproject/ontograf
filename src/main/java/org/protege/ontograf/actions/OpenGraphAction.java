@@ -63,8 +63,7 @@ public class OpenGraphAction extends CajunAction {
 		OWLModelManager owlModelManager = controller.getModel().getOwlModelManager();
 		boolean found = true;
 		
-		try {
-			Scanner scanner = new Scanner(file);
+		try (Scanner scanner = new Scanner(file)) {
 			
 			// make sure the stored graph is for the active ontology
 			if(scanner.hasNextLine()) {
