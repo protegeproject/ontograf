@@ -1,1 +1,15 @@
+# Maven
 target/
+
+# Eclipse
+.classpath
+.project
+.settings/
+META-INF/
+
+#intelliJ
+*.iws
+*.ipr
+.idea
+*.iml
+build/
