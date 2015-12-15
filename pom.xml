@@ -10,7 +10,7 @@
 
     <groupId>edu.stanford.protege</groupId>
     <artifactId>ontograf</artifactId>
-    <version>2.0.2-SNAPSHOT</version>
+    <version>2.0.1-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>OntoGraf</name>
@@ -98,6 +98,9 @@
                         <Bundle-ClassPath>.</Bundle-ClassPath>
                         <Bundle-SymbolicName>org.protege.ontograf;singleton:=true</Bundle-SymbolicName>
                         <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
+                        <Embed-Dependency>
+                            ca.uvic.cs.chisel.cajun
+                        </Embed-Dependency>
                         <Import-Package>
                             com.ibm.icu.*;resolution:=optional,
                             org.eclipse.swt.*;resolution:=optional,
