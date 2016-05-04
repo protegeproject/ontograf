@@ -72,7 +72,7 @@
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>protege-editor-owl</artifactId>
-            <version>5.0.0-beta-19</version>
+            <version>5.0.0-RC1</version>
         </dependency>
     </dependencies>
 
