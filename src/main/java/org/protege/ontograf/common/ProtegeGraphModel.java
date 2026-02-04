@@ -632,9 +632,9 @@ public class ProtegeGraphModel extends DefaultGraphModel {
     		for(OWLObjectProperty property : properties) {
     			for(OWLObjectProperty owlObjectProperty : property.getObjectPropertiesInSignature()) {
                     Collection<OWLClassExpression> domainVals = EntitySearcher
-                            .getDomains(owlObjectProperty, owlOntology);
+                            .getDomains(owlObjectProperty, owlOntologies);
                     Collection<OWLClassExpression> rangeVals = EntitySearcher
-                            .getRanges(owlObjectProperty, owlOntology);
+                            .getRanges(owlObjectProperty, owlOntologies);
     				
     				if (domainVals.isEmpty() && !rangeVals.isEmpty()) {
     					domainVals.add(owlModelManager.getOWLEntityFinder().getOWLClass("Thing"));
