@@ -599,8 +599,12 @@ public class ProtegeGraphModel extends DefaultGraphModel {
             Collection<OWLClassExpression> owlExpressions) {
 		Set<OWLEntity> domains = new HashSet<OWLEntity>();
 		for(OWLClassExpression expression : owlExpressions) {
-			if(expression instanceof OWLClass) {
+			if(expression == null) {
+				continue;
+			} else if(expression instanceof OWLClass) {
 				domains.add((OWLClass)expression);
+			} else {
+				domains.addAll(expression.getClassesInSignature());
 			}
 		}
 		
