@@ -29,30 +29,30 @@ public class ExportImageAction extends CajunAction {
 	private static final long serialVersionUID = 7241297162054742885L;
 
 	private static final String ACTION_NAME = "Export Graph as Image";
-	
+
 	private JFileChooser fileChooser;
 	private Component parent;
 	private PCanvas canvas;
-	
+
 	// booleans indicating whether the different formats are available
 	private boolean jpegAvailable;
 	private boolean pngAvailable;
 	private boolean gifAvailable;
-	
+
 	// file filters for showing only a given type of file in the file dialog
 	private OntoGrafFileFilter pngFileFilter;
 	private OntoGrafFileFilter gifFileFilter;
 	private OntoGrafFileFilter jpegFileFilter;
-	
+
 	public ExportImageAction(Component parent, PCanvas canvas) {
 		super(ACTION_NAME, IconConstants.ICON_EXPORT_IMAGE);
-		
+
 		putValue(Action.SHORT_DESCRIPTION, ACTION_NAME);
-		
+
 		this.parent = parent;
 		this.canvas = canvas;
 		this.fileChooser = new JFileChooser();
-		
+
 		String[] formats = ImageIO.getWriterFormatNames();
 		String allFormats = "";
 		for (int i = 0; i < formats.length; i++) {
@@ -68,7 +68,7 @@ public class ExportImageAction extends CajunAction {
 				allFormats += "GIF";
 			}
 		}
-		
+
 		fileChooser.setDialogTitle("Export to Image File (" + allFormats + ")");
 		//File dir = (lastDirectory != null ? lastDirectory : new File(System.getProperty("user.dir")));
 		//chooser.setCurrentDirectory(dir);
@@ -87,17 +87,17 @@ public class ExportImageAction extends CajunAction {
 			fileChooser.addChoosableFileFilter(jpegFileFilter);
 		}
 	}
-	
+
 	@Override
 	public void doAction() {
 		int result = fileChooser.showSaveDialog(parent);
-		
-		if(result == JFileChooser.CANCEL_OPTION) return;
-		
+
+		if(result != JFileChooser.APPROVE_OPTION) return;
+
 		File file = fileChooser.getSelectedFile();
 		FileFilter fileFilter = fileChooser.getFileFilter();
 		String filePath = file.toString();
-		String formatName = "";
+		String formatName = "png";
 		if (jpegFileFilter != null && jpegFileFilter.equals(fileFilter)) {
 			formatName = "jpg";
 			if (!filePath.toLowerCase().endsWith(".jpg") && !filePath.toLowerCase().endsWith(".jpeg")) {
@@ -119,7 +119,7 @@ public class ExportImageAction extends CajunAction {
 				file = new File(filePath);
 			}
 		}
-		
+
 		boolean saveImage = false;
 		if (file.exists()) {
 			String msg = "The file " + file.toString() + " already exists.\nDo you want to overwrite this existing file?";
@@ -141,7 +141,7 @@ public class ExportImageAction extends CajunAction {
 			exportGraphAsImage(file, formatName);
 		}
 	}
-	
+
 	private void exportGraphAsImage(File file, String formatName) {
 		boolean saved = false;
 		// if the parent is a viewport then save the entire canvas, not just the visible part
@@ -156,12 +156,12 @@ public class ExportImageAction extends CajunAction {
 				file.toString() + " has been saved successfully.");
 		}
 	}
-	
+
 	/**
 	 * Prompts the user to save the entire canvas or just the visible region.
 	 * If the entire canvas is selected then the canvas is removed from the viewport and resized, then
 	 * painted into the image and returned to the viewport.
-	 * 
+	 *
 	 * @return true if the image is saved
 	 */
 	private boolean saveViewport(File file, String formatName, PCanvas canvas, JViewport viewport) {
@@ -217,8 +217,8 @@ public class ExportImageAction extends CajunAction {
 		try {
 			BufferedImage bufferedImage = new BufferedImage(comp.getWidth(), comp.getHeight(), BufferedImage.TYPE_INT_RGB);
 			Graphics g = bufferedImage.getGraphics();
-			comp.paint(g); // paint the canvas to the image
-			ImageIO.write(bufferedImage, formatName, file);
+			try { comp.paint(g); } finally { g.dispose(); }
+            if (!ImageIO.write(bufferedImage, formatName, file)) throw new IOException("No image writer for " + formatName);
 		} catch (Throwable t) {
 			// sometimes an out of memory error will occur!
 			JOptionPane.showMessageDialog(parent,

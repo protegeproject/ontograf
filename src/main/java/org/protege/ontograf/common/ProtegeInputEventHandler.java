@@ -13,7 +13,7 @@ import edu.umd.cs.piccolo.event.PInputEventFilter;
 
 /**
  * Handles input events on the graph.
- * 
+ *
  * @author seanf
  */
 public class ProtegeInputEventHandler extends PBasicInputEventHandler {
@@ -21,7 +21,7 @@ public class ProtegeInputEventHandler extends PBasicInputEventHandler {
 
 	private ProtegeGraphModel graphModel;
 	private AbstractGraph graph;
-	
+
 	private FrameTooltipNode toolTip;
 	private DefaultGraphNode currentNode;
 
@@ -33,10 +33,10 @@ public class ProtegeInputEventHandler extends PBasicInputEventHandler {
 		filter.rejectAllEventTypes();
 		filter.setAcceptsMousePressed(true);
 		filter.setAcceptsMouseMoved(true);
-		
+
 		this.setEventFilter(filter);
 	}
-	
+
 	public void mouseMoved(PInputEvent event) {
 		if(event.getPickedNode() instanceof GraphNode) {
 			if(!event.getPickedNode().equals(currentNode)) {
@@ -51,21 +51,30 @@ public class ProtegeInputEventHandler extends PBasicInputEventHandler {
 
 	public void mousePressed(PInputEvent event) {
 		hideToolTip(currentNode);
-		
+
 		if (event.isLeftMouseButton()) {
 			if (event.getClickCount() == DOUBLE_CLICK) {
-				if (event.getPickedNode() instanceof GraphNode) {
+				if (event.getPickedNode() instanceof ca.uvic.cs.chisel.cajun.graph.arc.GraphArc) {
+                    ca.uvic.cs.chisel.cajun.graph.arc.GraphArc arc = (ca.uvic.cs.chisel.cajun.graph.arc.GraphArc)event.getPickedNode();
+                    if (arc.getUserObject() instanceof org.protege.ontograf.model.Relationship) {
+                        org.protege.ontograf.model.Relationship relationship = (org.protege.ontograf.model.Relationship)arc.getUserObject();
+                        javax.swing.JTextArea details = new javax.swing.JTextArea(graphModel.describe(relationship), 18, 70);
+                        details.setEditable(false); details.setLineWrap(true); details.setWrapStyleWord(true);
+                        javax.swing.JOptionPane.showMessageDialog(graph.getCanvas(), new javax.swing.JScrollPane(details),
+                                "Relationship and supporting axioms", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } else if (event.getPickedNode() instanceof GraphNode) {
 					expandCollapseNode((GraphNode) event.getPickedNode());
 					//((FlatGraph) graph).getAnimationHandler().moveViewToCenterBounds(graph.getBounds(), false, 1000, true);
 				}
 			}
-			else if(event.getClickCount() == 1 && event.isControlDown()) {
+			else if(event.getClickCount() == 1 && event.isControlDown() && event.getPickedNode() instanceof DefaultGraphNode) {
 				showToolTip((DefaultGraphNode)event.getPickedNode());
 				currentNode = null;
 			}
 		}
 	}
-	
+
 	private void hideToolTip(DefaultGraphNode node) {
 		PCamera camera = graph.getCanvas().getCamera();
 		if(toolTip != null) {
@@ -74,21 +83,21 @@ public class ProtegeInputEventHandler extends PBasicInputEventHandler {
 			toolTip = null;
 		}
 	}
-	
+
 	private void showToolTip(DefaultGraphNode node) {
 		PCamera camera = graph.getCanvas().getCamera();
 		hideToolTip(node);
-		
+
 		toolTip = new FrameTooltipNode(graphModel.getOwlModelManager(), graph, node, (OWLEntity)node.getUserObject());
 		camera.addChild(toolTip);
 		camera.repaint();
-		
+
 		currentNode = node;
 	}
-	
+
 	/**
 	 * Expands a node if it is not already expanded, otherwise it collapses it.
-	 * 
+	 *
 	 * @param graphNode The node to expand or collapse.
 	 */
 	private void expandCollapseNode(GraphNode graphNode) {

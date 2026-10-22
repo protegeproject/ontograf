@@ -1,0 +1,22 @@
+name: Build OntoGraf
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['11', '21']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - run: mvn --batch-mode --no-transfer-progress verify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ontograf-java-${{ matrix.java }}
+          path: target/ontograf-*.jar

@@ -13,3 +13,4 @@ META-INF/
 .idea
 *.iml
 build/
+helper.txt
