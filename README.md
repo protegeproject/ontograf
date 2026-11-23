@@ -17,7 +17,7 @@ Build and run the regression tests with:
 mvn --batch-mode clean verify
 ```
 
-For application testing, copy `target/ontograf-3.0.0-SNAPSHOT.jar` into the `plugins` directory of an assembled Protégé 6 distribution, removing any older OntoGraf JAR first. Enable **Window > Tabs > OntoGraf** and select the tab.
+For application testing, copy `target/ontograf-3.0.0.jar` into the `plugins` directory of an assembled Protégé 6 distribution, removing any older OntoGraf JAR first. Enable **Window > Tabs > OntoGraf** and select the tab.
 
 Open `src/test/resources/ontograf-smoke-test.ofn` and exercise:
 
