@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.Icon;
 
@@ -31,6 +32,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLQuantifiedRestriction;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
 import org.semanticweb.owlapi.search.EntitySearcher;
+import org.semanticweb.owlapi.model.parameters.Imports;
 
 import ca.uvic.cs.chisel.cajun.filter.FilterManager;
 import ca.uvic.cs.chisel.cajun.graph.DefaultGraphModel;
@@ -376,7 +378,7 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 
 		OWLNamedIndividual destIndiv = (OWLNamedIndividual) entityOfInterest;
         for (OWLClassExpression refNode : EntitySearcher.getTypes(destIndiv,
-                owlOntologies)) {
+                owlOntologies.stream()).collect(Collectors.toList())) {
 			if(refNode instanceof OWLClass) {
 				OWLClass clsOwner = (OWLClass)refNode;
 				if (isDisplayableNode(clsOwner, mustBeVisible)) {
@@ -400,7 +402,7 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 		for (OWLOntology owlOntology : owlOntologies) {
     		OWLClass owlClass = (OWLClass) entityOfInterest;
             Collection<OWLAxiom> axioms = EntitySearcher.getReferencingAxioms(
-                    owlClass, owlOntology, true);
+                    owlClass, owlOntology, Imports.INCLUDED).collect(Collectors.toList());
     		for(OWLAxiom axiom : axioms) {
     			if(axiom.getAxiomType().equals(AxiomType.SUBCLASS_OF)) {
     				OWLSubClassOfAxiom subClassAxiom = (OWLSubClassOfAxiom)axiom;
@@ -448,13 +450,13 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 		OWLClass owlClass = (OWLClass) entityOfInterest;
 		
         convertOWLClassExpressionsToArcs(owlClass,
-                EntitySearcher.getSuperClasses(owlClass, owlOntologies), arcs,
+                EntitySearcher.getSuperClasses(owlClass, owlOntologies.stream()).collect(Collectors.toList()), arcs,
                 null, mustBeVisible);
 		
 		OWLIconProviderImpl iconProvider = new OWLIconProviderImpl(owlModelManager);
 		Icon icon = iconProvider.getIcon(owlClass);
         convertOWLClassExpressionsToArcs(owlClass,
-                EntitySearcher.getEquivalentClasses(owlClass, owlOntologies),
+                EntitySearcher.getEquivalentClasses(owlClass, owlOntologies.stream()).collect(Collectors.toList()),
                 arcs, icon, mustBeVisible);
 		
 		return arcs;
@@ -581,7 +583,7 @@ public class ProtegeGraphModel extends DefaultGraphModel {
 
 		OWLClass owlClass = (OWLClass) entityOfInterest;
         for (OWLIndividual individual : EntitySearcher.getIndividuals(owlClass,
-                owlOntologies)) {
+                owlOntologies.stream()).collect(Collectors.toList())) {
 			if(individual instanceof OWLNamedIndividual) {
 				OWLNamedIndividual namedIndividual = (OWLNamedIndividual)individual;
 				if(isDisplayableNode(namedIndividual, mustBeVisible)) {
@@ -632,9 +634,9 @@ public class ProtegeGraphModel extends DefaultGraphModel {
     		for(OWLObjectProperty property : properties) {
     			for(OWLObjectProperty owlObjectProperty : property.getObjectPropertiesInSignature()) {
                     Collection<OWLClassExpression> domainVals = EntitySearcher
-                            .getDomains(owlObjectProperty, owlOntology);
+                            .getDomains(owlObjectProperty, owlOntology).collect(Collectors.toList());
                     Collection<OWLClassExpression> rangeVals = EntitySearcher
-                            .getRanges(owlObjectProperty, owlOntology);
+                            .getRanges(owlObjectProperty, owlOntology).collect(Collectors.toList());
     				
     				if (domainVals.isEmpty() && !rangeVals.isEmpty()) {
     					domainVals.add(owlModelManager.getOWLEntityFinder().getOWLClass("Thing"));
