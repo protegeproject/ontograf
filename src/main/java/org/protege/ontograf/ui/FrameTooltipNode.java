@@ -36,6 +36,7 @@ import org.semanticweb.owlapi.model.OWLObjectPropertyAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
 import org.semanticweb.owlapi.search.EntitySearcher;
+import java.util.stream.Collectors;
 
 import ca.uvic.cs.chisel.cajun.graph.AbstractGraph;
 import edu.umd.cs.piccolo.PCamera;
@@ -169,7 +170,7 @@ public class FrameTooltipNode extends PNode {
 		if(NodeOWLIndividualTooltipType.DIFFERENT_INDIVIDUALS.isEnabled()) {
             Collection<OWLIndividual> individuals = EntitySearcher
                     .getDifferentIndividuals(individual,
-                            owlModelManager.getActiveOntology());
+                            owlModelManager.getActiveOntology()).collect(Collectors.toList());
 			if(individuals.size() > 0) {
 				currentPos = addCollectionTextValues(individuals, "Different individuals:", font, currentPos);
 			}
@@ -178,7 +179,7 @@ public class FrameTooltipNode extends PNode {
 		if(NodeOWLIndividualTooltipType.SAME_INDIVIDUALS.isEnabled()) {
             Collection<OWLIndividual> individuals = EntitySearcher
                     .getSameIndividuals(individual,
-                            owlModelManager.getActiveOntology());
+                            owlModelManager.getActiveOntology()).collect(Collectors.toList());
 			if(individuals.size() > 0) {
 				currentPos = addCollectionTextValues(individuals, "Same individuals:", font, currentPos);
 			}
@@ -240,7 +241,7 @@ public class FrameTooltipNode extends PNode {
 		if(NodeOWLIndividualTooltipType.ANNOTATIONS.isEnabled()) {
             Collection<OWLAnnotation> annotations = EntitySearcher
                     .getAnnotations(owlEntity,
-                            owlModelManager.getActiveOntology());
+                            owlModelManager.getActiveOntology()).collect(Collectors.toList());
 			if(annotations.size() > 0) {
 				currentPos = addCollectionTextValues(annotations, "Annotations:", font, currentPos);
 			}
@@ -282,7 +283,7 @@ public class FrameTooltipNode extends PNode {
 		if(NodeOWLClassTooltipType.ANNOTATIONS.isEnabled()) {
             Collection<OWLAnnotation> annotations = EntitySearcher
                     .getAnnotations(owlEntity,
-                            owlModelManager.getActiveOntology());
+                            owlModelManager.getActiveOntology()).collect(Collectors.toList());
 			if(annotations.size() > 0) {
 				currentPos = addCollectionTextValues(annotations, "Annotations:", font, currentPos);
 			}

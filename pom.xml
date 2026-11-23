@@ -1,18 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
-    </parent>
-
     <groupId>edu.stanford.protege</groupId>
     <artifactId>ontograf</artifactId>
-    <version>2.0.4-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
-
     <name>OntoGraf</name>
     <description>A plug-in for the Protege Desktop ontology editor that allows visual, interactive navigation of the relationships in OWL ontologies.</description>
     <url>https://github.com/protegeproject/ontograf</url>
@@ -22,16 +14,13 @@
             <url>http://www.gnu.org/copyleft/lesser.html</url>
         </license>
     </licenses>
-
     <developers>
         <developer>
             <name>Sean Falconer</name>
             <email>falconer.sean@gmail.com</email>
         </developer>
     </developers>
-
     <mailingLists>
-        <!-- For end users with questions about how to use the DL Query tab. -->
         <mailingList>
             <name>protege-user</name>
             <subscribe>https://mailman.stanford.edu/mailman/listinfo/protege-user</subscribe>
@@ -42,8 +31,6 @@
                 <otherArchive>https://mailman.stanford.edu/pipermail/protege-user/</otherArchive>
             </otherArchives>
         </mailingList>
-
-        <!-- For developers.  -->
         <mailingList>
             <name>protege-dev</name>
             <subscribe>https://mailman.stanford.edu/mailman/listinfo/protege-dev</subscribe>
@@ -55,15 +42,25 @@
             </otherArchives>
         </mailingList>
     </mailingLists>
-
     <scm>
         <connection>scm:git:git@github.com:protegeproject/ontograf.git</connection>
         <developerConnection>scm:git:git@github.com:protegeproject/ontograf.git</developerConnection>
         <url>https://github.com/protegeproject/ontograf</url>
-      <tag>HEAD</tag>
-  </scm>
-
+        <tag>HEAD</tag>
+    </scm>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <protege.version>6.0.0-alpha-1</protege.version>
+        <owlapi.version>5.5.1</owlapi.version>
+    </properties>
     <dependencies>
+        <!-- Match the Guava API exported by the Protege runtime. -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>ca.uvic.cs.chisel.cajun</artifactId>
@@ -72,132 +69,126 @@
         <dependency>
             <groupId>edu.stanford.protege</groupId>
             <artifactId>protege-editor-owl</artifactId>
-            <version>5.0.0-RC1</version>
+            <version>${protege.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge.owlapi</groupId>
+            <artifactId>owlapi-osgidistribution</artifactId>
+            <version>${owlapi.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>4.11.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.4.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>3.14.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>11</release>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.11.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.5.3</version>
+                <version>5.1.9</version>
                 <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
                     <instructions>
-                        <Bundle-Activator>org.protege.editor.owl.ProtegeOWL</Bundle-Activator>
                         <Bundle-ClassPath>.</Bundle-ClassPath>
                         <Bundle-SymbolicName>org.protege.ontograf;singleton:=true</Bundle-SymbolicName>
                         <Bundle-Vendor>The Protege Development Team</Bundle-Vendor>
-                        <Embed-Dependency>
-                            ca.uvic.cs.chisel.cajun
-                        </Embed-Dependency>
+                        <Embed-Dependency>ca.uvic.cs.chisel.cajun</Embed-Dependency>
+                        <Export-Package>org.protege.ontograf.*;version=${project.version}</Export-Package>
                         <Import-Package>
                             com.ibm.icu.*;resolution:=optional,
                             org.eclipse.swt.*;resolution:=optional,
                             org.eclipse.jface.*;resolution:=optional,
-                            org.protege.editor.core.*;version="5.0.0",
-                            org.protege.editor.owl.*;version="5.0.0",
+                            org.protege.editor.owl.ui;version="[6.0.0,7.0.0)",
+                            org.protege.editor.core.*;version="[6.0.0,7.0.0)",
+                            org.protege.editor.owl.*;version="[6.0.0,7.0.0)",
                             *
                         </Import-Package>
                         <Include-Resource>plugin.xml, {maven-resources}</Include-Resource>
                     </instructions>
-                    <executions>
-                        <execution>
-                            <id>bundle-manifest</id>
-                            <phase>install</phase>
-                            <goals>
-                                <goal>manifest</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-eclipse-plugin</artifactId>
-                <version>2.9</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
                 <configuration>
-                    <pde>true</pde>
+                    <argLine>-Djava.awt.headless=true</argLine>
                 </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.scm</groupId>
-                        <artifactId>maven-scm-provider-gitexe</artifactId>
-                        <version>1.9</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
-
-    <!-- Generate source and Javadoc JAR files, and sign artifacts.  Required by Sonatype OSSRH for deployment. -->
-    <profiles>
-        <profile>
-            <id>release</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.3</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                                <configuration>
-                                    <failOnError>false</failOnError>
-                                    <quiet>true</quiet>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

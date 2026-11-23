@@ -71,9 +71,9 @@ import org.semanticweb.owlapi.model.OWLSubPropertyChainOfAxiom;
 import org.semanticweb.owlapi.model.OWLSymmetricObjectPropertyAxiom;
 import org.semanticweb.owlapi.model.OWLTransitiveObjectPropertyAxiom;
 import org.semanticweb.owlapi.search.EntitySearcher;
-import org.semanticweb.owlapi.util.OWLObjectVisitorAdapter;
+import org.semanticweb.owlapi.model.OWLObjectVisitor;
 
-public class OWLIconProviderImpl extends OWLObjectVisitorAdapter implements OWLIconProvider {
+public class OWLIconProviderImpl implements OWLObjectVisitor, OWLIconProvider {
 	
     private Icon icon;
 
